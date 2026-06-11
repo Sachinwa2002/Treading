@@ -11,13 +11,13 @@
 //--if the price is match then it will execute and update th quantity in the orderBook.
 //-- if the quantity is not sufficient then it will check if the order is LIMIT or MARKET if its 
 //LIMIT then it will be there in orderBook otherwise will cancel the remaining qwuantity
-void MatchingEngine::processOrderWithTiming(Order &order){
-    auto start=std::chrono::high_resolution_clock::now();
-    processOrder(order);
-    auto end=std::chrono::high_resolution_clock::now();
-    auto ns= std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count();
-    std:: cout<<"Latency | orderId: "<<order.orderId<<" | " << ns <<"ns" <<std::endl;
-}
+// void MatchingEngine::processOrderWithTiming(Order &order){
+//     auto start=std::chrono::high_resolution_clock::now();
+//     processOrder(order);
+//     auto end=std::chrono::high_resolution_clock::now();
+//     auto ns= std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count();
+//     std:: cout<<"Latency | orderId: "<<order.orderId<<" | " << ns <<"ns" <<std::endl;
+// }
 void MatchingEngine::processOrder(Order& order){
     //check icoming order first
     {
@@ -60,7 +60,7 @@ void MatchingEngine::processOrder(Order& order){
         }
         if(order.remainingQuantity>0 && order.orderType==OrderType::MARKET){
             order.status=Status::CANCELLED;
-            std::cout<<"MARKET Order Cancelled | orderId: " << order.orderId << " | qty : " << order.remainingQuantity << " | price : " << order.price << std::endl;
+            //std::cout<<"MARKET Order Cancelled | orderId: " << order.orderId << " | qty : " << order.remainingQuantity << " | price : " << order.price << std::endl;
         }
       
     }
@@ -101,7 +101,7 @@ void MatchingEngine::processOrder(Order& order){
         }
         if(order.remainingQuantity>0 && order.orderType==OrderType::MARKET){
             order.status=Status::CANCELLED;
-            std::cout<<"MARKET Order Cancelled | orderId: " << order.orderId << " | qty : " << order.remainingQuantity << " | price : " << order.price << std::endl;
+            //std::cout<<"MARKET Order Cancelled | orderId: " << order.orderId << " | qty : " << order.remainingQuantity << " | price : " << order.price << std::endl;
         }
     }
 }
@@ -115,7 +115,7 @@ void MatchingEngine::executeTrade(Order & buyOrder, Order &sellOrder, uint64_t q
     }
     else{
         buyOrder.status= Status::PARTIAL_FILL;
-        std::cout << "BUY ORDER PARTIAL FILL | orderId: " << buyOrder.orderId << " | remaining: " << buyOrder.remainingQuantity << std::endl;
+        //std::cout << "BUY ORDER PARTIAL FILL | orderId: " << buyOrder.orderId << " | remaining: " << buyOrder.remainingQuantity << std::endl;
     }
 
     if(sellOrder.remainingQuantity==0){
@@ -123,15 +123,15 @@ void MatchingEngine::executeTrade(Order & buyOrder, Order &sellOrder, uint64_t q
     }
     else{
         sellOrder.status=Status::PARTIAL_FILL;
-        std::cout << "SELL ORDER PARTIAL FILL | orderId: " << sellOrder.orderId << " | remaining: " << sellOrder.remainingQuantity << std::endl;
+        //std::cout << "SELL ORDER PARTIAL FILL | orderId: " << sellOrder.orderId << " | remaining: " << sellOrder.remainingQuantity << std::endl;
     }
 
-    std::cout<< "TRADE EXECUTED | "
-              << "Qty: " << quantity
-              << " | Price: " << sellOrder.price
-              << " | BuyOrder: " << buyOrder.orderId
-              << " | SellOrder: " << sellOrder.orderId
-              << std::endl;
+    // std::cout<< "TRADE EXECUTED | "
+    //           << "Qty: " << quantity
+    //           << " | Price: " << sellOrder.price
+    //           << " | BuyOrder: " << buyOrder.orderId
+    //           << " | SellOrder: " << sellOrder.orderId
+    //           << std::endl;
            
 }
 
