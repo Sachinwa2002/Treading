@@ -76,7 +76,7 @@ void MatchingEngine::processOrder(Order& order){
                      //std::cout<<"Order Waiting in the orderBook | orderId: " <<order.orderId << " | qty : "<< order.remainingQuantity << " | price : "<<order.price<<std::endl;
                 }
                 break ;
-            }
+            }   
 
             //2nd check point check resting order.
             if(orderBook.isCancelled(bestBid.orderId)){
