@@ -8,6 +8,7 @@
 
 class MatchingEngine{
     private:
+    //taking reference of orderBook because we want to update the orderBook when we execute the trade.
     OrderBook& orderBook;
 
     public:
