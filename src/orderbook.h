@@ -13,8 +13,6 @@ private:
     static Order emptyOrder;
     // std::map<int64_t, std::deque<Order>, std::greater<int64_t>> bids;
     // std::map<int64_t, std::deque<Order>, std::less<int64_t>> asks;
-    static const int64_t MAX_PRICE=450000;
-    static const int64_t MIN_PRICE=300000;
     static const int64_t PRICE_LEVELS=MAX_PRICE-MIN_PRICE+1;
     std::vector<std::deque<Order>>bids;
     std::vector<std::deque<Order>>asks;
