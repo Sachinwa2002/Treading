@@ -1,10 +1,16 @@
 #include "orderbook.h"
 
-void OrderBook::addOrder(Order order) {
+void OrderBook::addOrder(Order &order) {
     if (order.side == Side::BUY) {
-        bids[order.price].push_back(order);
+        if(order.price>bestBidIndex){
+            bestBidIndex=order.price;
+        }
+        bids[order.price-MIN_PRICE].push_back(order);
     } else {
-        asks[order.price].push_back(order);
+        if(order.price<bestAskIndex){
+            bestAskIndex=order.price;
+        }
+        asks[order.price-MIN_PRICE].push_back(order);
     }
     orderIndex[order.orderId] = {order.price, order.side};
 }
@@ -13,33 +19,28 @@ void OrderBook::cancelOrder(uint64_t orderId) {
     cancelledOrders.insert(orderId);
     if (orderIndex.find(orderId) != orderIndex.end()) {
         int64_t price = orderIndex[orderId].price;
-        if (orderIndex[orderId].side == Side::BUY) {
-            for (auto it = bids[price].begin(); it != bids[price].end();) {
+        Side cancellSide=orderIndex[orderId].side;
+        if (cancellSide == Side::BUY) {
+            for (auto it = bids[price-MIN_PRICE].begin(); it != bids[price-MIN_PRICE].end();) {
                 if (it->orderId == orderId) {
-                    it = bids[price].erase(it);
+                    it = bids[price-MIN_PRICE].erase(it);
                     orderIndex.erase(orderId);
                     cancelledOrders.erase(orderId);
                     break;
                 } else {
                     it++;
                 }
-            }
-            if (bids[price].empty()) {
-                bids.erase(price);
             }
         } else {
-            for (auto it = asks[price].begin(); it != asks[price].end();) {
+            for (auto it = asks[price-MIN_PRICE].begin(); it != asks[price-MIN_PRICE].end();) {
                 if (it->orderId == orderId) {
-                    it = asks[price].erase(it);
+                    it = asks[price-MIN_PRICE].erase(it);
                     orderIndex.erase(orderId);
                     cancelledOrders.erase(orderId);
                     break;
                 } else {
                     it++;
                 }
-            }
-            if (asks[price].empty()) {
-                asks.erase(price);
             }
         }
     }
@@ -47,13 +48,13 @@ void OrderBook::cancelOrder(uint64_t orderId) {
 Order OrderBook::emptyOrder = Order{};
 
 Order& OrderBook::getBestBid() {
-    if (bids.empty()) return emptyOrder;
-    return bids.begin()->second.front();
+    if (bids[bestBidIndex-MIN_PRICE].empty()) return emptyOrder;
+    return bids[bestBidIndex-MIN_PRICE].front();
 }
 
 Order& OrderBook::getBestAsk() {
-    if (asks.empty()) return emptyOrder;
-    return asks.begin()->second.front();
+    if (asks[bestAskIndex-MIN_PRICE].empty()) return emptyOrder;
+    return asks[bestAskIndex-MIN_PRICE].front();
 }
 
 bool OrderBook::isCancelled(uint64_t orderId) {
@@ -61,19 +62,20 @@ bool OrderBook::isCancelled(uint64_t orderId) {
 }
 
 void OrderBook::removeTopBid() {
-    if (bids.empty()) return;
-    auto& dq = bids.begin()->second;
+    if (bids[bestBidIndex-MIN_PRICE].empty()) return;
+    auto& dq = bids[bestBidIndex-MIN_PRICE];
     dq.pop_front();
-    if (dq.empty()) {
-        bids.erase(bids.begin());
+    while(bestBidIndex>MIN_PRICE && bids[bestBidIndex-MIN_PRICE].empty()){
+        bestBidIndex--;
     }
+    
 }
 
 void OrderBook::removeTopAsk() {
-    if (asks.empty()) return;
-    auto& dq = asks.begin()->second;
+    if (asks[bestAskIndex-MIN_PRICE].empty()) return;
+    auto& dq = asks[bestAskIndex-MIN_PRICE];
     dq.pop_front();
-    if (dq.empty()) {
-        asks.erase(asks.begin());
+    while(bestAskIndex<MAX_PRICE && asks[bestAskIndex-MIN_PRICE].empty()){
+        bestAskIndex++;
     }
 }
