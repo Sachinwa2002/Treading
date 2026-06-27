@@ -18,8 +18,6 @@ enum class Status {
     FILLED,
     CANCELLED
 };
-static const int64_t MAX_PRICE=800000;
-static const int64_t MIN_PRICE=300000;
 struct Order {
     Side side;
     std::string symbol;

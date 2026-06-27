@@ -11,9 +11,9 @@ class OrderBook {
 
 private:
     static Order emptyOrder;
-    // std::map<int64_t, std::deque<Order>, std::greater<int64_t>> bids;
-    // std::map<int64_t, std::deque<Order>, std::less<int64_t>> asks;
-    static const int64_t PRICE_LEVELS=MAX_PRICE-MIN_PRICE+1;
+    int64_t MIN_PRICE;
+    int64_t MAX_PRICE;
+    int64_t PRICE_LEVELS;
     std::vector<std::deque<Order>>bids;
     std::vector<std::deque<Order>>asks;
     std::unordered_map<uint64_t, OrderLocation> orderIndex;
@@ -23,7 +23,10 @@ private:
     int64_t bestAskIndex;
 
 public:
-    OrderBook():
+    OrderBook(int64_t minPrice,int64_t maxPrice):
+    MIN_PRICE(minPrice),
+    MAX_PRICE(maxPrice),
+    PRICE_LEVELS(MAX_PRICE-MIN_PRICE+1),
     bids(PRICE_LEVELS),
     asks(PRICE_LEVELS),
     bestBidIndex(MIN_PRICE),
