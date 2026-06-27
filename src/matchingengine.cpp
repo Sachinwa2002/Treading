@@ -126,12 +126,12 @@ void MatchingEngine::executeTrade(Order & buyOrder, Order &sellOrder, uint64_t q
         //std::cout << "SELL ORDER PARTIAL FILL | orderId: " << sellOrder.orderId << " | remaining: " << sellOrder.remainingQuantity << std::endl;
     }
 
-    // std::cout<< "TRADE EXECUTED | "
-    //           << "Qty: " << quantity
-    //           << " | Price: " << sellOrder.price
-    //           << " | BuyOrder: " << buyOrder.orderId
-    //           << " | SellOrder: " << sellOrder.orderId
-    //           << std::endl;
+    std::cout<< "TRADE EXECUTED | "
+              << "Qty: " << quantity
+              << " | Price: " << sellOrder.price
+              << " | BuyOrder: " << buyOrder.orderId
+              << " | SellOrder: " << sellOrder.orderId
+              << std::endl;
            
 }
 
