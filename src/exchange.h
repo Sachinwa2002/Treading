@@ -11,7 +11,7 @@ class Exchange{
     std::unordered_map<std::string,std::unique_ptr<OrderBook>>orderBooks;
     std::unordered_map<std::string,std::unique_ptr<MatchingEngine>>engines;
     std::unordered_map<std::string, std::pair<int64_t, int64_t>> symbolConfig = {
-    {"BTCUSDT", {6000000, 6100000}},
+    {"BTCUSDT", {6000000, 6500000}},
     {"TCS",     {200000,  800000}},
     {"INFY",    {100000,  400000}}
 };
