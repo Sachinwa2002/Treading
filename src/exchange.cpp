@@ -1,28 +1,30 @@
 #include "exchange.h"
 #include  <iostream>
 #include "orderbook.h"
+#include "logger.h"
+
 void Exchange::processOrder(Order &order){
 if(symbolConfig.find(order.symbol)==symbolConfig.end()){
-    std::cout<<"Invalid order symbol. order rejected | orderId:"<<order.orderId<< " |symbol :"<<order.symbol<<std::endl;
+    Logger::logError("Invalid order symbol", order.orderId, order.price, order.symbol);
     return ;
 }
     int64_t symMax=symbolConfig[order.symbol].second;
     int64_t symMin=symbolConfig[order.symbol].first;
 
 if(order.price<0 || order.price>symMax || order.price<symMin){
-    std::cout<<"Invalid order price. order rejected | orderId:"<<order.orderId<< " |price :"<<order.price<<std::endl;
+    Logger::logError("Invalid order price", order.orderId, order.price, order.symbol);
     return ;
 }
 if(order.quantity<=0){
-    std::cout<<"Invalid order quantity. order rejected | orderId:"<<order.orderId<< " |quantity :"<<order.quantity<<std::endl;
+    Logger::logError("Invalid order quantity", order.orderId, order.price, order.symbol);
     return ;
 }
 if(order.symbol.empty()){
-    std::cout<<"Invalid order symbol. order rejected | orderId:"<<order.orderId<< " |symbol :"<<order.symbol<<std::endl;
+    Logger::logError("Invalid order symbol", order.orderId, order.price, order.symbol);
     return ;
 }
 if(order.remainingQuantity!=order.quantity){
-    std::cout<<" order remaining quantity and order quantity mismatch. order rejected | orderId:"<<order.orderId<< " |remainingQuantity :"<<order.remainingQuantity<<std::endl;
+    Logger::logError("Order remaining quantity and order quantity mismatch", order.orderId, order.price, order.symbol);
     return ;
 }
 

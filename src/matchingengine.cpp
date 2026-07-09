@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <chrono>
 #include "matchingengine.h"
+#include "logger.h"
 
 
 //the matching enginee witll match the orders math the buyers to sellers. 
@@ -125,13 +126,8 @@ void MatchingEngine::executeTrade(Order & buyOrder, Order &sellOrder, uint64_t q
         sellOrder.status=Status::PARTIAL_FILL;
         //std::cout << "SELL ORDER PARTIAL FILL | orderId: " << sellOrder.orderId << " | remaining: " << sellOrder.remainingQuantity << std::endl;
     }
-
-    std::cout<< "TRADE EXECUTED | "
-              << "Qty: " << quantity
-              << " | Price: " << sellOrder.price
-              << " | BuyOrder: " << buyOrder.orderId
-              << " | SellOrder: " << sellOrder.orderId
-              << std::endl;
+    Logger::logTrade(buyOrder.orderId, sellOrder.orderId,
+                 sellOrder.price, quantity, sellOrder.symbol);
            
 }
 
