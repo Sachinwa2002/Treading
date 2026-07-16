@@ -123,8 +123,11 @@ void MarketDataFeed::processLevel(std::string price, std::string qty, Side side)
    order.timeStamp=0;
    order.remainingQuantity=intqty;
    order.status=Status::NEW;
-   //send order for processing to exchange
-   exchange.processOrder(order);
+   // pushed to ring buffer instead of exchange
+   // spin until space available
+   while(!ringBuffer.push(order)){
+      //busy- waiting for the next order
+   }
    processedCount++;
 
 }

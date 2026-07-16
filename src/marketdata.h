@@ -1,8 +1,8 @@
 #pragma once
 #include <iostream>
 #include "order.h"
-#include "exchange.h"
 #include "json.hpp"
+#include "ringbuffer.h"
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
@@ -19,7 +19,7 @@ using tcp = net::ip::tcp;
 
 class MarketDataFeed{
     private:
-    Exchange &exchange;
+    RingBuffer &ringBuffer;
     uint64_t nextOrderId;
     std::string symbol;
     int processedCount = 0;
@@ -30,8 +30,8 @@ class MarketDataFeed{
     std::unique_ptr<websocket::stream<beast::ssl_stream<beast::tcp_stream>>> ws;
 
     public:
-    MarketDataFeed(Exchange &ex, std::string sym):
-    exchange(ex),nextOrderId(1),symbol(sym){}
+    MarketDataFeed(RingBuffer &rb, std::string sym): ringBuffer(rb),nextOrderId(1),symbol(sym){}
+    
 
     void connectWebSocket();
     void runWebSocket();
