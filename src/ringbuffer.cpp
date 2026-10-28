@@ -2,6 +2,12 @@
 #include "ringbuffer.h"
 #include "logger.h"
 
+
+// memeory ordering terms being used:-
+// Reading MY OWN variable      → relaxed
+// Reading the OTHER thread's   → acquire
+// Writing (publishing)         → release
+
 bool RingBuffer::push(const Order &order){
     std::int64_t currTail=tail.load(std::memory_order_relaxed);
     std::int64_t currHead=head.load(std::memory_order_acquire);

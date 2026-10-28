@@ -1,17 +1,15 @@
 #include<iostream>
 #include <algorithm>
 #include <chrono>
+#include <ctime>
 #include "matchingengine.h"
 #include "logger.h"
 
 
-//the matching enginee witll match the orders math the buyers to sellers. 
-//skaleton is declared in matchingenginee.h and we will implement it here in matchingenginee.cpp
-//processOrder:- it will check if the order is canceleed or not . 
-//--if not cancelled it will ask for the best price from the orderBook and then compare the price
-//--if the price is match then it will execute and update th quantity in the orderBook.
-//-- if the quantity is not sufficient then it will check if the order is LIMIT or MARKET if its 
-//LIMIT then it will be there in orderBook otherwise will cancel the remaining qwuantity
+// Matching-engine level order processing.
+// This function is responsible for matching a single incoming order against the current
+// resting orders for that symbol. It checks cancellation, compares price against the best
+// opposing order, executes trades when possible, and leaves unmatched LIMIT orders in the book.
 // void MatchingEngine::processOrderWithTiming(Order &order){
 //     auto start=std::chrono::high_resolution_clock::now();
 //     processOrder(order);
@@ -20,12 +18,18 @@
 //     std:: cout<<"Latency | orderId: "<<order.orderId<<" | " << ns <<"ns" <<std::endl;
 // }
 void MatchingEngine::processOrder(Order& order){
-    //check icoming order first
-    {
-        if(orderBook.isCancelled(order.orderId)){
-            return ;
-        }
+    // Check whether this order was cancelled before attempting matching.
+    auto start=std::chrono::high_resolution_clock::now();
+
+    if(orderBook.isCancelled(order.orderId)){
+        auto end=std::chrono::high_resolution_clock::now();
+        const auto ns =
+            std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count();
+        std::cout << "[LATENCY] orderId=" << order.orderId
+                  << " matching=" << ns << " ns\n";
+        return;
     }
+
     if(order.side==Side::BUY){
         while(order.remainingQuantity>0){
             Order& bestAsk=orderBook.getBestAsk();
@@ -34,6 +38,7 @@ void MatchingEngine::processOrder(Order& order){
                 //if best ask is empty then we will add the order into orderbook according to its type
                 if(order.orderType== OrderType:: LIMIT){
                      orderBook.addOrder(order);
+                     Logger::logOrderEvent("RESTING", order);
                      //std::cout<<"Order WAITING in orderBook | orderId: " << order.orderId << " | qty : " << order.remainingQuantity << " | price : " << order.price << std::endl;
                 }
                 break;
@@ -48,6 +53,7 @@ void MatchingEngine::processOrder(Order& order){
             //3rd check point for the price and market type
              if(order.orderType == OrderType::LIMIT && bestAsk.price>order.price){
                  orderBook.addOrder(order);
+                 Logger::logOrderEvent("RESTING", order);
                  //std::cout<<"Order WAITING in orderBook  | orderId: " << order.orderId << " | qty : " << order.remainingQuantity << " | price : " << order.price << std::endl;
                  break;
             }
@@ -61,6 +67,7 @@ void MatchingEngine::processOrder(Order& order){
         }
         if(order.remainingQuantity>0 && order.orderType==OrderType::MARKET){
             order.status=Status::CANCELLED;
+            Logger::logOrderEvent("MARKET_REMAINDER_CANCELLED", order);
             //std::cout<<"MARKET Order Cancelled | orderId: " << order.orderId << " | qty : " << order.remainingQuantity << " | price : " << order.price << std::endl;
         }
       
@@ -74,6 +81,7 @@ void MatchingEngine::processOrder(Order& order){
                 //if best bid is empty then we will add the order into orderbook according to its type
                 if(order.orderType== OrderType:: LIMIT){
                      orderBook.addOrder(order);
+                     Logger::logOrderEvent("RESTING", order);
                      //std::cout<<"Order Waiting in the orderBook | orderId: " <<order.orderId << " | qty : "<< order.remainingQuantity << " | price : "<<order.price<<std::endl;
                 }
                 break ;
@@ -89,6 +97,7 @@ void MatchingEngine::processOrder(Order& order){
             if(order.orderType==OrderType::LIMIT && bestBid.price<order.price){
                 //if the best bid price is less then for LIMIT order we push them into the cart
                 orderBook.addOrder(order);
+                Logger::logOrderEvent("RESTING", order);
                 //  std::cout<<"Order Waiting in the orderBook | orderId: " <<order.orderId << " | qty : "<< order.remainingQuantity << " | price : "<<order.price<<std::endl;
                     break;
             }
@@ -102,9 +111,15 @@ void MatchingEngine::processOrder(Order& order){
         }
         if(order.remainingQuantity>0 && order.orderType==OrderType::MARKET){
             order.status=Status::CANCELLED;
+            Logger::logOrderEvent("MARKET_REMAINDER_CANCELLED", order);
             //std::cout<<"MARKET Order Cancelled | orderId: " << order.orderId << " | qty : " << order.remainingQuantity << " | price : " << order.price << std::endl;
         }
     }
+    auto end=std::chrono::high_resolution_clock::now();
+    const auto ns =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count();
+    std::cout << "[LATENCY] orderId=" << order.orderId
+              << " matching=" << ns << " ns\n";
 }
 
 void MatchingEngine::executeTrade(Order & buyOrder, Order &sellOrder, uint64_t quantity){
@@ -127,7 +142,7 @@ void MatchingEngine::executeTrade(Order & buyOrder, Order &sellOrder, uint64_t q
         //std::cout << "SELL ORDER PARTIAL FILL | orderId: " << sellOrder.orderId << " | remaining: " << sellOrder.remainingQuantity << std::endl;
     }
     Logger::logTrade(buyOrder.orderId, sellOrder.orderId,
-                 sellOrder.price, quantity, sellOrder.symbol);
+                 sellOrder.price, quantity, sellOrder.symbol,
+                 buyOrder.remainingQuantity, sellOrder.remainingQuantity);
            
 }
-

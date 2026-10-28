@@ -15,8 +15,5 @@ class RingBuffer{
     RingBuffer(): head(0),tail(0){}
 
     bool push(const Order &order);
-    bool pop(Order &order);
-
- 
-    
+    bool pop(Order &order);   
 };

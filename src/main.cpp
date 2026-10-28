@@ -16,16 +16,21 @@ void consumerLoop(RingBuffer& rb, Exchange& ex,LatencyTracker &tracker){
     Order order;
     while(true) {
         if(rb.pop(order)) {
+            static int64_t counter=0;
             auto start=std::chrono::high_resolution_clock::now();
             ex.processOrder(order);
             auto end=std::chrono::high_resolution_clock::now();
            auto ns=std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count();
-           tracker.addLatency(ns);
-
-           static int64_t counter=0;
+           if(counter>=100){
+              tracker.addLatency(ns);
+           }
            counter++;
-           if(counter%20==0){
+           if(counter%1000==0){
             tracker.printStats();
+           }
+           if(counter>=50000){
+            tracker.printStats();
+             std::exit(0);
            }
         }
         // spin if empty
@@ -43,10 +48,7 @@ int main(){
     std::thread consumer(consumerLoop, std::ref(ringBuffer), std::ref(exchange),std::ref(tracker));
 
     feed.runWebSocket();
-
     consumer.join();
-
-    
     Logger::close();
     return 0;
 }

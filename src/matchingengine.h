@@ -14,7 +14,7 @@ class MatchingEngine{
     public:
     MatchingEngine(OrderBook &book): orderBook(book){}
 
-    void processOrder(Order& Order);
+    void processOrder(Order& order);
     void processOrderWithTiming(Order& order);
 
     private:

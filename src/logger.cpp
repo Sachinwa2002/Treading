@@ -4,14 +4,33 @@
 
 std::ofstream Logger::tradeFile;
 std::ofstream Logger::errorFile;
+std::ofstream Logger::historyFile;
+
+namespace {
+const char* sideName(Side side) {
+    return side == Side::BUY ? "BUY" : "SELL";
+}
+
+const char* orderTypeName(OrderType type) {
+    return type == OrderType::LIMIT ? "LIMIT" : "MARKET";
+}
+
+int64_t timestampNs() {
+    const auto now = std::chrono::system_clock::now();
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(
+        now.time_since_epoch()).count();
+}
+}
 
 void Logger::init(){
     tradeFile.open("trades.log",std::ios::app);
     errorFile.open("errors.log",std::ios::app);
+    historyFile.open("order_history.log",std::ios::trunc);
 }
 
 void Logger::logTrade(uint64_t buyOrderId, uint64_t sellOrderId, int64_t price,
-                         uint64_t quantity, const std::string& symbol) {
+                         uint64_t quantity, const std::string& symbol,
+                         uint64_t buyRemaining, uint64_t sellRemaining) {
 
      //write the trade logs here;
      auto now=std::chrono::system_clock::now();
@@ -23,9 +42,31 @@ void Logger::logTrade(uint64_t buyOrderId, uint64_t sellOrderId, int64_t price,
               << " | Price: " << price
               << " | Qty: " << quantity
               << "\n";
-      
-     tradeFile.flush();
 
+     historyFile << "[" << timestampNs() << "][FILL]"
+                 << " Symbol=" << symbol
+                 << " | BuyOrder=" << buyOrderId
+                 << " | SellOrder=" << sellOrderId
+                 << " | Price=" << price
+                 << " | Qty=" << quantity
+                 << " | BuyRemaining=" << buyRemaining
+                 << " | SellRemaining=" << sellRemaining << '\n';
+}
+
+void Logger::logOrderEvent(const std::string& event, const Order& order,
+                           const std::string& details) {
+    historyFile << "[" << timestampNs() << "][" << event << "]"
+                << " OrderId=" << order.orderId
+                << " | Symbol=" << order.symbol
+                << " | Side=" << sideName(order.side)
+                << " | Type=" << orderTypeName(order.orderType)
+                << " | Price=" << order.price
+                << " | Qty=" << order.quantity
+                << " | Remaining=" << order.remainingQuantity;
+    if (!details.empty()) {
+        historyFile << " | " << details;
+    }
+    historyFile << '\n';
 }
 
 
@@ -47,4 +88,5 @@ void Logger::logError(const std::string& reason, uint64_t orderId, int64_t price
 void Logger::close(){
     tradeFile.close();
     errorFile.close();
+    historyFile.close();
 }
